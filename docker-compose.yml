@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:latest
+    container_name: my-redis
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:15
+    container_name: my-postgres
+    environment:
+      POSTGRES_USER: ${SPRING_POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${SPRING_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${SPRING_POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  xecurrencyconverter:
+    build: .
+    container_name: my-xecurrencyconverter
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+      - postgres
+    environment:
+      - SPRING_REDIS_HOST=${SPRING_REDIS_HOST}
+      - SPRING_REDIS_PORT=${SPRING_REDIS_PORT}
+      - SPRING_POSTGRES_HOST=${SPRING_POSTGRES_HOST}
+      - SPRING_POSTGRES_PORT=${SPRING_POSTGRES_PORT}
+      - SPRING_POSTGRES_DB=${SPRING_POSTGRES_DB}
+      - SPRING_POSTGRES_USERNAME=${SPRING_POSTGRES_USERNAME}
+      - SPRING_POSTGRES_PASSWORD=${SPRING_POSTGRES_PASSWORD}
+volumes:
+  postgres_data:

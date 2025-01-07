@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: XeCurrencyConverter
+
+  cache:
+    type: redis
+
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6379}
+
+  datasource:
+    url: jdbc:postgresql://${SPRING_POSTGRES_HOST:localhost}:${SPRING_POSTGRES_PORT:5432}/${SPRING_POSTGRES_DB:xe_currency_converter}
+    username: ${SPRING_POSTGRES_USERNAME}
+    password: ${SPRING_POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+centralBankApi:
+  base_url: "https://www.cbar.az/currencies/"
