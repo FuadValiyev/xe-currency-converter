@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/exchange")
 @RequiredArgsConstructor
-public class ExchangeRateController {
+public class CurrencyController {
 
     private final CentralBankApiService centralBankApiService;
 

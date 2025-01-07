@@ -35,117 +35,6 @@ public class CentralBankApiService {
     @Value("${centralBankApi.base_url}")
     private String BASE_URL;
 
-//    @Cacheable(cacheNames = "exchangeRateCache", key = "#request.date + '_' + #request.currencyCode+#request.amountAZN")
-//    public ExchangeRateResponse fetchExchangeRateByAZN(ExchangeRateRequest request) {
-//        ExchangeRateResponse response = new ExchangeRateResponse();
-//
-//        ExchangeRateBean bean = new ExchangeRateBean();
-//        bean.setDate(request.getDate());
-//        bean.setCurrencyCode(request.getCurrencyCode());
-//        bean.setAmountAZN(request.getAmountAZN());
-//
-//        if (isNullOrEmpty(request.getDate())
-//            || isNullOrEmpty(request.getCurrencyCode())
-//            || request.getAmountAZN() == null) {
-//
-//            return new ExchangeRateResponse(ExchangeStatus.INVALID_REQUEST_BODY, null);
-//        }
-//
-//        LocalDate parsedDate;
-//        try {
-//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-//            parsedDate = LocalDate.parse(request.getDate(), formatter);
-//        } catch (DateTimeParseException e) {
-//            return new ExchangeRateResponse(ExchangeStatus.FAILURE,
-//                    "Tarix formatı düzgün deyil: " + request.getDate());
-//        }
-//
-//        Optional<ExchangeRateEntity> optionalExchangeRate =
-//                exchangeRateRepository.findByDateAndCurrencyCode(parsedDate, request.getCurrencyCode());
-//
-//        if (optionalExchangeRate.isPresent()) {
-//            ExchangeRateEntity cachedRate = optionalExchangeRate.get();
-//            response.setStatus(ExchangeStatus.SUCCESS.getCode());
-//            response.setMessage(ExchangeStatus.SUCCESS.getMessage());
-//            bean.setValue(calculateAmount(
-//                    request.getAmountAZN(),
-//                    cachedRate.getRate(),
-//                    cachedRate.getNominal()));
-//            bean.setName(cachedRate.getName());
-//            response.setData(bean);
-//            return response;
-//        }
-//
-//        try {
-//            URL url = new URL(BASE_URL + request.getDate() + ".xml");
-//            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//            conn.setRequestMethod("GET");
-//
-//            Document doc = XmlUtility.parseXml(conn.getInputStream());
-//            doc.getDocumentElement().normalize();
-//
-//            Element root = doc.getDocumentElement();
-//            String xmlDate = root.getAttribute("Date");
-//
-//            NodeList valuteList = doc.getElementsByTagName("Valute");
-//            double finalAmount = request.getAmountAZN();
-//            boolean found = false;
-//            double rate = 0, nominal = 0;
-//            String nameOfCurrencyCode = "";
-//
-//            for (int i = 0; i < valuteList.getLength(); i++) {
-//                Element element = (Element) valuteList.item(i);
-//                if (request.getCurrencyCode().equals(element.getAttribute("Code"))) {
-//                    rate = Double.parseDouble(
-//                            element.getElementsByTagName("Value").item(0).getTextContent()
-//                    );
-//                    nominal = Double.parseDouble(element.getElementsByTagName("Nominal").item(0)
-//                            .getTextContent()
-//                            .replaceAll("\\D+", ""));
-//
-//                    nameOfCurrencyCode = element.getElementsByTagName("Name")
-//                            .item(0)
-//                            .getTextContent()
-//                            .replaceFirst("^\\d+\\s+", "");
-//
-//                    finalAmount = calculateAmount(finalAmount, rate, nominal);
-//                    found = true;
-//                    break;
-//                }
-//            }
-//
-//            if (!found) {
-//                return new ExchangeRateResponse(ExchangeStatus.FAILURE,
-//                        "Valyuta tapılmadı: " + request.getCurrencyCode());
-//            } else {
-//                response.setStatus(ExchangeStatus.SUCCESS.getCode());
-//                response.setMessage(ExchangeStatus.SUCCESS.getMessage());
-//                bean.setName(nameOfCurrencyCode);
-//                bean.setDate(xmlDate);
-//                bean.setValue(finalAmount);
-//                response.setData(bean);
-//
-//                ExchangeRateEntity exchangeRate = new ExchangeRateEntity();
-//                exchangeRate.setDate(parsedDate);
-//                exchangeRate.setCurrencyCode(request.getCurrencyCode());
-//                exchangeRate.setRate(rate);
-//                exchangeRate.setNominal(nominal);
-//                exchangeRate.setName(nameOfCurrencyCode);
-//                exchangeRateRepository.save(exchangeRate);
-//            }
-//
-//            return response;
-//
-//        } catch (ParserConfigurationException | SAXException | IOException e) {
-//            log.error("An error occurred on attempt {}:", e.getMessage());
-//        }
-//        return new ExchangeRateResponse(ExchangeStatus.FAILURE, null);
-//    }
-//
-//    public static Double calculateAmount(double amount, double rate, double nominal) {
-//        return (amount * rate) / nominal;
-//    }
-
     @Cacheable(cacheNames = "exchangeRateCache", key = "#request.date + '_' + #request.currencyCode")
     public CurrencyResponse getCurrencyACB(CurrencyRequest request) {
         CurrencyResponse response = new CurrencyResponse();
@@ -192,8 +81,6 @@ public class CentralBankApiService {
 
                 if (statusCode >= 500 && statusCode < 600) {
                     throw new RuntimeException("Mərkəzi Bankın serveri cavab vermir. Status kodu: \" + statusCode");
-//                    return new CurrencyResponse(ExchangeStatus.FAILURE,
-//                            "Mərkəzi Bankın serveri cavab vermir. Status kodu: " + statusCode);
                 }
 
                 Document doc = XmlUtility.parseXml(conn.getInputStream());
@@ -226,8 +113,6 @@ public class CentralBankApiService {
 
                 if (!found) {
                     throw new RuntimeException("Valyuta tapılmadı: " + request.getCurrencyCode());
-//                    return new CurrencyResponse(ExchangeStatus.FAILURE,
-//                            "Valyuta tapılmadı: " + request.getCurrencyCode());
                 } else {
                     response.setStatus(ExchangeStatus.SUCCESS.getCode());
                     response.setMessage(ExchangeStatus.SUCCESS.getMessage());
